@@ -6,11 +6,11 @@ on:
 
 
 env:
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: test-key
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_mocked-stripe-public-key-for-sandbox-use-only-123456789abc
   RAILS_ENV: test
-  STRIPE_SECRET_KEY: test-key
-  WISE_API_KEY: test-key
-  WISE_PROFILE_ID: test-key
+  STRIPE_SECRET_KEY: sk_test_mocked-stripe-secret-key-for-sandbox-use-only-abcdef987654
+  WISE_API_KEY: wise-test-api0-mock-token-123abc456def
+  WISE_PROFILE_ID: 12345678
 
 jobs:
   rspec:
