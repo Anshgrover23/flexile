@@ -170,10 +170,18 @@ class Company < ApplicationRecord
 
   def bank_account_ready? = !!bank_account&.ready?
 
+  ##
+  # Returns the estimated maximum number of business days for a contractor to receive payment
+  # after a consolidated invoice is charged.
+  # Trusted companies settle faster.
+  # @return [Integer] 2 for trusted companies, 10 for others (business days)
   def contractor_payment_processing_time_in_days
     is_trusted? ? 2 : 10 # estimated max number of business days for a contractor to receive payment after a consolidated invoice is charged
   end
 
+  ##
+  # Returns true if the "expenses" feature flag is enabled for this company.
+  # @return [Boolean] True when Flipper reports the :expenses feature enabled for this company, false otherwise.
   def expenses_enabled?
     Flipper.enabled?(:expenses, self)
   end

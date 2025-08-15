@@ -46,6 +46,26 @@ class UserPresenter
     }
   end
 
+  ##
+  # Builds a structured representation of the currently logged-in user within the presenter’s context.
+  #
+  # The returned hash includes:
+  # - top-level user metadata (id, name, legal/preferred names, email, billing entity, address, currentCompanyId),
+  # - roles: a map of company role keys (administrator, lawyer, investor, worker) to role-specific attributes when the user holds that role for the current company,
+  # - companies: an array of per-company payloads (navigation props, address, feature flags, financial fields visible only when the user can view financial data, counts, checklist info, and other company attributes),
+  # - payout method flags, onboardingPath (set when the current worker exists but has no role), and taxInformationConfirmedAt (ISO 8601 or nil).
+  #
+  # Role details:
+  # - Administrator: includes id (string) and isInvited (true if invited by a company worker for the current company).
+  # - Lawyer: includes id (external identifier).
+  # - Investor: includes external id and booleans/flags about documents, grants, shares, convertibles, and AngelList investment.
+  # - Worker: includes external id, document presence, employment end time, pay rate info, role, and equity percentage.
+  #
+  # Per-company notes:
+  # - The `flags` array contains feature flags such as "equity", "company_updates", "expenses", and "option_exercising" when applicable.
+  # - Financial fields (fullyDilutedShares, valuationInDollars, sharePriceInUsd, conversionSharePriceUsd, exercisePriceInUsd) are provided only if the user is an administrator or investor for that company; otherwise they are nil.
+  #
+  # @return [Hash] A serializable hash of the logged-in user's data and related per-company payloads for frontend consumption.
   def logged_in_user
     roles = {}
     has_documents = documents.joins(:signatures).not_consulting_contract.or(documents.unsigned).exists?

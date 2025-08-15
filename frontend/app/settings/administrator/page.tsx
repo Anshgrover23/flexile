@@ -24,6 +24,17 @@ const formSchema = z.object({
   brandColor: z.string().nullable(),
   publicName: z.string(),
 });
+/**
+ * SettingsPage — React client component for viewing and updating workspace branding and integrations.
+ *
+ * Renders a form to edit company public name, website, and brand color, preview and optionally upload a new logo,
+ * and save those settings. If a logo file is selected it will be uploaded (direct PUT to a signed URL) and the
+ * returned file key will be included when updating the company settings. After a successful save the component
+ * refetches workspace settings and invalidates current user cache; the save mutation's success state is reset
+ * after a short delay.
+ *
+ * @returns The settings page JSX.
+ */
 export default function SettingsPage() {
   const company = useCurrentCompany();
   const [settings, { refetch }] = trpc.companies.settings.useSuspenseQuery({ companyId: company.id });
