@@ -2,7 +2,7 @@
 
 class Internal::Companies::Administrator::CapTablesController < Internal::Companies::BaseController
   def create
-    authorize Current.company
+    authorize :cap_table
 
     result = CreateCapTable.new(
       company: Current.company,
@@ -10,7 +10,7 @@ class Internal::Companies::Administrator::CapTablesController < Internal::Compan
     ).perform
 
     if result[:success]
-      render json: { success: true }, status: :created
+      head :created
     else
       render json: { success: false, errors: result[:errors] }, status: :unprocessable_entity
     end
