@@ -83,7 +83,7 @@ class Company < ApplicationRecord
   has_many :company_stripe_accounts
   has_many :bank_accounts, class_name: "CompanyStripeAccount"
   has_one :bank_account, -> { alive.order(created_at: :desc) }, class_name: "CompanyStripeAccount"
-  has_one_attached :logo, service: (Rails.env.test? ? :test_public : :amazon_public)
+  has_one_attached :logo, service: public_bucket
   has_one_attached :full_logo
 
   validates :name, presence: true, on: :update, if: :name_changed?
@@ -219,6 +219,13 @@ class Company < ApplicationRecord
     invite_link = SecureRandom.base58(16)
     update!(invite_link:)
     invite_link
+  end
+
+  def cap_table_empty?
+    !option_pools.exists? &&
+      !share_classes.exists? &&
+      !company_investors.exists? &&
+      !share_holdings.exists?
   end
 
   private
