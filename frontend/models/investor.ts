@@ -1,7 +1,7 @@
 type SAFEInvestor = {
   name: string;
-  sharesByClass?: Record<string, number>;
-  optionsByStrike?: Record<string, number>;
+  sharesByClass?: Record<string, number> | undefined;
+  optionsByStrike?: Record<string, number> | undefined;
 };
 
 type Investor = SAFEInvestor & {
@@ -10,16 +10,16 @@ type Investor = SAFEInvestor & {
   notes: string | null;
   outstandingShares: bigint;
   fullyDilutedShares: bigint;
-  sharesByClass: Record<string, number>;
-  optionsByStrike: Record<string, number>;
+  sharesByClass?: Record<string, number> | undefined;
+  optionsByStrike?: Record<string, number> | undefined;
 };
 type InvestorEntity = SAFEInvestor & {
   id: string;
   notes: string | null;
   outstandingShares: bigint;
   fullyDilutedShares: bigint;
-  sharesByClass: Record<string, number>;
-  optionsByStrike: Record<string, number>;
+  sharesByClass?: Record<string, number> | undefined;
+  optionsByStrike?: Record<string, number> | undefined;
 };
 type InvestorForAdmin = (Investor | InvestorEntity) & { email: string };
 

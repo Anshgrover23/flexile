@@ -203,7 +203,7 @@ export default function CapTable() {
       if (isColumnVisible(`shareClass_${shareClassName}`)) {
         const total = data.investors.reduce((sum, investor) => {
           if (isInvestor(investor)) {
-            return sum + (investor.sharesByClass[shareClassName] || 0);
+            return sum + (investor.sharesByClass?.[shareClassName] || 0);
           }
           return sum;
         }, 0);
@@ -226,7 +226,7 @@ export default function CapTable() {
       if (isColumnVisible(`option_${strikePrice}`)) {
         const total = data.investors.reduce((sum, investor) => {
           if (isInvestor(investor)) {
-            return sum + (investor.optionsByStrike[strikePrice] || 0);
+            return sum + (investor.optionsByStrike?.[strikePrice] || 0);
           }
           return sum;
         }, 0);
