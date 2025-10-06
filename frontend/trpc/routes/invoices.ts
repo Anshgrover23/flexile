@@ -108,6 +108,7 @@ export const invoicesRouter = createRouter({
         companyContractor: companyWorker,
         serviceAmountCents: Number(totalAmountCents),
         invoiceYear: dateToday.getFullYear(),
+        providedEquityPercentage: companyWorker.equityPercentage,
       });
 
       if (!equityResult) {
@@ -196,7 +197,7 @@ export const invoicesRouter = createRouter({
       replyTo: companyWorker.company.email,
       subject: `💰 ${companyWorker.company.name} has sent you money`,
       react: OneOffInvoiceCreated({
-        companyName: companyWorker.company.name || companyWorker.company.email,
+        companyName: companyWorker.company.name ?? companyWorker.company.email,
         invoice,
         bankAccountLastFour,
         paymentDescriptions,

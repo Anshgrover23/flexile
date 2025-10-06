@@ -248,6 +248,14 @@ export default function ContractorPage() {
             ) : null}
             <Form {...issuePaymentForm}>
               <form onSubmit={(e) => void submitIssuePayment(e)} className="grid gap-4">
+                {company.flags.includes("equity") && (contractor?.equityPercentage ?? 0) > 0 ? (
+                  <Alert>
+                    <Info />
+                    <AlertDescription>
+                      {user.displayName} will receive {contractor?.equityPercentage ?? 0}% equity
+                    </AlertDescription>
+                  </Alert>
+                ) : null}
                 <FormField
                   control={issuePaymentForm.control}
                   name="amountInCents"
@@ -282,7 +290,6 @@ export default function ContractorPage() {
                     </FormItem>
                   )}
                 />
-
                 {issuePaymentForm.formState.errors.root ? (
                   <small className="text-red">{issuePaymentForm.formState.errors.root.message}</small>
                 ) : null}

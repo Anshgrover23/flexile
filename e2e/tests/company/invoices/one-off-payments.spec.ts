@@ -23,7 +23,7 @@ test.describe("One-off payments", () => {
   let companyInvestor: CompanyInvestor;
 
   test.beforeEach(async () => {
-    const result = await companiesFactory.createCompletedOnboarding();
+    const result = await companiesFactory.createCompletedOnboarding({ isTrusted: true });
     adminUser = result.adminUser;
     company = result.company;
     workerUser = (await usersFactory.create()).user;
@@ -53,6 +53,7 @@ test.describe("One-off payments", () => {
       const invoice = await db.query.invoices.findFirst({
         where: and(eq(invoices.invoiceNumber, "O-0001"), eq(invoices.companyId, company.id)),
       });
+      expect(invoice?.acceptedAt).not.toBeNull();
       expect(invoice).toEqual(
         expect.objectContaining({
           totalAmountInUsdCents: BigInt(215430),
@@ -134,7 +135,12 @@ test.describe("One-off payments", () => {
         );
       });
 
-      test("errors when default equity cannot be calculated (no grant and no share price)", async ({ page }) => {
+      test("errors if the worker has no equity grant and the company does not have a share price", async ({ page }) => {
+        await db
+          .update(companyContractors)
+          .set({ equityPercentage: 80 })
+          .where(eq(companyContractors.id, companyContractor.id));
+
         await db.update(companies).set({ fmvPerShareInUsd: null }).where(eq(companies.id, company.id));
         await db.delete(equityGrants).where(eq(equityGrants.companyInvestorId, companyInvestor.id));
         await db
@@ -147,6 +153,7 @@ test.describe("One-off payments", () => {
 
         await withinModal(
           async (modal) => {
+            await expect(modal.getByText("will receive 80% equity")).toBeVisible();
             await modal.getByLabel("Amount").fill("50000.00");
             await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
             await Promise.all([
@@ -157,13 +164,18 @@ test.describe("One-off payments", () => {
           },
           { page, assertClosed: false },
         );
+
+        const invoice = await db.query.invoices.findFirst({
+          where: and(eq(invoices.invoiceNumber, "O-0001"), eq(invoices.companyId, company.id)),
+        });
+        expect(invoice).toBeUndefined();
       });
 
-      test("uses contractor's default equity percentage", async ({ page, sentEmails }) => {
+      test("uses the contractor's configured equity percentage", async ({ page, sentEmails }) => {
         await db
           .update(companyContractors)
-          .set({ equityPercentage: 10 })
-          .where(eq(companyContractors.userId, workerUser.id));
+          .set({ equityPercentage: 15 })
+          .where(eq(companyContractors.id, companyContractor.id));
 
         await login(page, adminUser, `/people/${workerUser.externalId}?tab=invoices`);
 
@@ -171,6 +183,7 @@ test.describe("One-off payments", () => {
 
         await withinModal(
           async (modal) => {
+            await expect(modal.getByText("will receive 15% equity")).toBeVisible();
             await modal.getByLabel("Amount").fill("500.00");
             await modal.getByLabel("What is this for?").fill("Bonus payment for Q4");
             await modal.getByRole("button", { name: "Issue payment" }).click();
@@ -181,14 +194,16 @@ test.describe("One-off payments", () => {
         const invoice = await db.query.invoices.findFirst({
           where: and(eq(invoices.invoiceNumber, "O-0001"), eq(invoices.companyId, company.id)),
         });
+        expect(invoice?.acceptedAt).not.toBeNull();
         expect(invoice).toEqual(
           expect.objectContaining({
             totalAmountInUsdCents: BigInt(50000),
-            equityPercentage: 10,
-            cashAmountInCents: BigInt(45000),
-            equityAmountInCents: BigInt(5000),
-            equityAmountInOptions: 5,
-            acceptedAt: expect.any(Date),
+            equityPercentage: 15,
+            cashAmountInCents: BigInt(42500),
+            equityAmountInCents: BigInt(7500),
+            equityAmountInOptions: 8,
+            minAllowedEquityPercentage: null,
+            maxAllowedEquityPercentage: null,
           }),
         );
 
@@ -277,8 +292,6 @@ test.describe("One-off payments", () => {
         .click();
 
       await expect(page.getByRole("cell", { name: "Bonus!" })).toBeVisible();
-
-      await expect(page.getByRole("button", { name: "Accept payment" })).not.toBeVisible();
 
       await logout(page);
       await login(page, adminUser);
