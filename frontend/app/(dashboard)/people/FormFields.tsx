@@ -27,9 +27,8 @@ export default function FormFields() {
 
   const [rolePopoverOpen, setRolePopoverOpen] = useState(false);
   const roleRegex = new RegExp(form.watch("role"), "iu");
-  const filteredRoles = workers
-    ? [...new Set(workers.map((worker) => worker.role))].sort().filter((value) => roleRegex.test(value))
-    : defaultRoles;
+  const allRoles = workers ? [...new Set(workers.map((worker) => worker.role))].sort() : defaultRoles;
+  const filteredRoles = allRoles.filter((value) => roleRegex.test(value));
 
   return (
     <>
@@ -39,7 +38,7 @@ export default function FormFields() {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Role</FormLabel>
-            <Command shouldFilter={false}>
+            <Command shouldFilter={false} className="overflow-visible">
               <Popover open={!!rolePopoverOpen && filteredRoles.length > 0}>
                 <PopoverAnchor asChild>
                   <FormControl>
@@ -47,6 +46,7 @@ export default function FormFields() {
                       {...field}
                       type="text"
                       autoComplete="off"
+                      className="focus-visible:ring-ring focus-visible:border-border focus-visible:ring-2"
                       onFocus={() => setRolePopoverOpen(true)}
                       onBlur={() => setRolePopoverOpen(false)}
                       onChange={(e) => {

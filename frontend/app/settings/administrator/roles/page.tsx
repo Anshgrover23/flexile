@@ -106,7 +106,9 @@ const UserOrEmailInput = ({
   const renderOption = (option: { value: string; label: string; email?: string }) => (
     <div>
       <div className="font-medium">{option.label}</div>
-      {option.email ? <div className="text-muted-foreground text-sm">{option.email}</div> : null}
+      {option.email ? (
+        <div className="text-muted-foreground truncate text-sm whitespace-nowrap">{option.email}</div>
+      ) : null}
     </div>
   );
 
@@ -244,12 +246,12 @@ export default function RolesPage() {
           const user = info.row.original;
           const isCurrentUser = currentUser.email === user.email;
           return (
-            <div>
-              <div className="font-medium">
-                {user.name}
-                {isCurrentUser ? <span className="text-muted-foreground ml-1">(You)</span> : null}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 font-medium">
+                <span className="truncate">{user.name}</span>
+                {isCurrentUser ? <span className="text-muted-foreground shrink-0 text-xs">(You)</span> : null}
               </div>
-              <div className="text-muted-foreground text-sm">{user.email}</div>
+              <div className="text-muted-foreground truncate text-sm">{user.email}</div>
             </div>
           );
         },
@@ -276,7 +278,6 @@ export default function RolesPage() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="small"
                     className="h-8 w-8 p-0"
                     disabled={isCurrentUserRow || isLoadingRevoke || isLastAdmin}
                   >
@@ -358,9 +359,9 @@ export default function RolesPage() {
 
   return (
     <>
-      <div className="grid gap-8">
+      <div className="mb-24 grid gap-8">
         <hgroup>
-          <h2 className="mb-1 text-xl font-bold">Roles</h2>
+          <h2 className="mb-1 text-3xl font-bold">Roles</h2>
           <p className="text-muted-foreground text-base">Use roles to grant deeper access to your workspace.</p>
         </hgroup>
         <div className="[&_td:first-child]:!pl-0 [&_td:last-child]:!pr-0 [&_th:first-child]:!pl-0 [&_th:last-child]:!pr-0">
@@ -372,12 +373,7 @@ export default function RolesPage() {
                 table={table}
                 searchColumn="name"
                 actions={
-                  <Button
-                    variant="outline"
-                    size="small"
-                    onClick={() => setShowAddModal(true)}
-                    className="w-full md:w-auto"
-                  >
+                  <Button variant="primary" onClick={() => setShowAddModal(true)} className="w-full md:w-auto">
                     <Plus className="size-4" />
                     Add member
                   </Button>
@@ -389,7 +385,7 @@ export default function RolesPage() {
       </div>
 
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="overflow-visible sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Add a member</DialogTitle>
             <DialogDescription>
@@ -453,6 +449,8 @@ export default function RolesPage() {
                 ) : null}
                 <Button
                   type="submit"
+                  variant="primary"
+                  className="w-full md:w-auto"
                   disabled={
                     !addMemberForm.formState.isValid ||
                     addRoleMutation.isPending ||

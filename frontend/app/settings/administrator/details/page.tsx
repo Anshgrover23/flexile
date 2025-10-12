@@ -107,6 +107,7 @@ export default function Details() {
                     {...field}
                     placeholder="XX-XXXXXXX"
                     onChange={(e) => field.onChange(formatTaxId(e.target.value))}
+                    maxLength={10}
                   />
                 </FormControl>
                 <FormMessage />
@@ -194,11 +195,14 @@ export default function Details() {
             />
           </div>
 
-          <div className="text-xs">Flexile is only available for companies based in the United States.</div>
+          <div className="text-muted-foreground text-xs">
+            Flexile is only available for companies based in the United States.
+          </div>
         </div>
         <MutationStatusButton
           mutation={updateSettings}
           type="submit"
+          idleVariant="primary"
           loadingText="Saving..."
           successText="Changes saved"
           className="w-fit"

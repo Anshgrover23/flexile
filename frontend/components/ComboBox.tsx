@@ -30,11 +30,13 @@ const ComboBox = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="small"
           role="combobox"
           aria-expanded={open}
           {...props}
-          className={cn("w-full min-w-0 justify-between", className)}
+          className={cn(
+            "border-input focus-visible:ring-ring focus-visible:border-border aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 w-full min-w-0 justify-between outline-none focus-visible:ring-2 focus-visible:outline-hidden dark:bg-transparent",
+            className,
+          )}
         >
           <div className="truncate">
             {value?.length ? (multiple ? value.map(getLabel).join(", ") : getLabel(value)) : placeholder}

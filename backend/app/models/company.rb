@@ -75,7 +75,6 @@ class Company < ApplicationRecord
   has_many :balance_transactions
   has_one :balance
   has_one :equity_exercise_bank_account, -> { order(id: :desc) }
-  has_one :quickbooks_integration, -> { alive }
   has_many :share_classes
   has_many :share_holdings, through: :company_investors
   has_many :option_pools
@@ -85,6 +84,7 @@ class Company < ApplicationRecord
   has_one :bank_account, -> { alive.order(created_at: :desc) }, class_name: "CompanyStripeAccount"
   has_one_attached :logo, service: public_bucket
   has_one_attached :full_logo
+  has_many :document_templates
 
   validates :name, presence: true, on: :update, if: :name_changed?
   validates :email, presence: true
@@ -219,6 +219,13 @@ class Company < ApplicationRecord
     invite_link = SecureRandom.base58(16)
     update!(invite_link:)
     invite_link
+  end
+
+  def cap_table_empty?
+    !option_pools.exists? &&
+      !share_classes.exists? &&
+      !company_investors.exists? &&
+      !share_holdings.exists?
   end
 
   private
