@@ -13,10 +13,10 @@ concurrency:
 env:
   RAILS_ENV: test
   # In CI, run Wise and Stripe tests with valid credentials
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'dummy' }}
-  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY || 'dummy' }}
-  WISE_API_KEY: ${{ secrets.WISE_API_KEY || 'dummy' }}
-  WISE_PROFILE_ID: ${{ secrets.WISE_PROFILE_ID || 0 }}
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'dummy'
+  STRIPE_SECRET_KEY: 'dummy'
+  WISE_API_KEY: 'dummy'
+  WISE_PROFILE_ID: 0
 
 jobs:
   rspec:
@@ -48,13 +48,29 @@ jobs:
       - name: Build setup
         uses: ./.github/common/
 
+      - name: Install Puppeteer Chrome (timed)
+        shell: bash
+        run: |
+          echo "### CI timing (rspec job)" >> "$GITHUB_STEP_SUMMARY"
+          start_ts=$(date +%s)
+          pnpm puppeteer browsers install chrome
+          end_ts=$(date +%s)
+          duration=$((end_ts - start_ts))
+          echo "- Puppeteer Chrome install: ${duration}s" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Setup test database
         run: cd backend && bundle exec rails db:create db:schema:load
 
-      - name: Run tests
+      - name: Run tests (timed)
         env:
           RUBY_YJIT_ENABLE: 1
-        run: cd backend && bundle exec rspec --format RSpec::Github::Formatter --tag ~skip --tag ~type:system --format progress
+        shell: bash
+        run: |
+          start_ts=$(date +%s)
+          cd backend && bundle exec rspec --format RSpec::Github::Formatter --tag ~skip --tag ~type:system --format progress
+          end_ts=$(date +%s)
+          duration=$((end_ts - start_ts))
+          echo "- Backend RSpec: ${duration}s" >> "$GITHUB_STEP_SUMMARY"
         timeout-minutes: 20
 
   playwright:
