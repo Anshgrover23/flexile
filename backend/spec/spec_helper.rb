@@ -132,6 +132,23 @@ RSpec.configure do |config|
     allow_any_instance_of(CreatePdf).to receive(:perform).and_return("pdf")
   end
 
+  config.around(:each, :benchmark_ci) do |example|
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    example.run
+    end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    duration_seconds = (end_time - start_time).round(3)
+
+    summary_path = ENV["GITHUB_STEP_SUMMARY"]
+    if summary_path && !summary_path.empty?
+      File.open(summary_path, "a") do |file|
+        file.puts "### RSpec example timing"
+        file.puts "- #{example.full_description}: #{duration_seconds}s"
+      end
+    else
+      puts "[benchmark] #{example.full_description}: #{duration_seconds}s"
+    end
+  end
+
   config.before(:each, type: :system) do
     if page.driver.browser.respond_to?(:execute_cdp)
       page.driver.browser.execute_cdp("Emulation.setTimezoneOverride", timezoneId: "GMT")

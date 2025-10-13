@@ -5,7 +5,7 @@ RSpec.describe CreateDocumentPdfJob, type: :job do
 
   let(:company) { create(:company) }
 
-  it "generates and attaches a PDF to the document" do
+  it "generates and attaches a PDF to the document", :benchmark_ci do
     document = company.documents.create!(
       document_type: Document.document_types[:consulting_contract],
       text: %Q{<h1>Test</h1><script>alert('x')</script><img src="x" onerror="alert('y')">},
