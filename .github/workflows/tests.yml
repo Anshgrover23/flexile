@@ -48,16 +48,6 @@ jobs:
       - name: Build setup
         uses: ./.github/common/
 
-      - name: Install Puppeteer Chrome (timed)
-        shell: bash
-        run: |
-          echo "### CI timing (rspec job)" >> "$GITHUB_STEP_SUMMARY"
-          start_ts=$(date +%s)
-          pnpm puppeteer browsers install chrome
-          end_ts=$(date +%s)
-          duration=$((end_ts - start_ts))
-          echo "- Puppeteer Chrome install: ${duration}s" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Setup test database
         run: cd backend && bundle exec rails db:create db:schema:load
 
