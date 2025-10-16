@@ -15,10 +15,12 @@ const RichText = ({
   content,
   className,
   enableAutolink = false,
+  plainText = false,
 }: {
   content: Content | string;
   className?: string;
   enableAutolink?: boolean;
+  plainText?: boolean;
 }) => {
   const extensions = enableAutolink
     ? [
@@ -36,7 +38,7 @@ const RichText = ({
     content,
     editorProps: {
       attributes: {
-        class: cn(className, "prose text-foreground dark:prose-invert"),
+        class: cn(className, plainText ? "text-foreground" : "prose text-foreground dark:prose-invert"),
       },
     },
     editable: false,

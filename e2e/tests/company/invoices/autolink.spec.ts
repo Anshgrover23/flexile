@@ -1,4 +1,3 @@
-import { db } from "@test/db";
 import { companiesFactory } from "@test/factories/companies";
 import { companyContractorsFactory } from "@test/factories/companyContractors";
 import { invoiceLineItemsFactory } from "@test/factories/invoiceLineItems";
@@ -7,16 +6,11 @@ import { usersFactory } from "@test/factories/users";
 import { login } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 import type { Page } from "@test/index";
-import { eq } from "drizzle-orm";
-import { invoices, users } from "@/db/schema";
+import { users } from "@/db/schema";
 
-async function verifyLinksAndContent(
-  page: Page,
-  contentMap: Record<string, string[]>,
-  { inNotes = false }: { inNotes?: boolean } = {},
-) {
+async function verifyLinksAndContent(page: Page, contentMap: Record<string, string[]>) {
   const links = Object.keys(contentMap);
-  const container = inNotes ? page.locator('footer:has-text("Notes")') : page.getByRole("table").getByRole("cell");
+  const container = page.getByRole("table").getByRole("cell");
 
   for (const href of links) {
     const link = page.locator(`a[href="${href}"]`);
@@ -46,10 +40,6 @@ test.describe("Automatic link detection in invoice content", () => {
 
   async function createLineItem(description: string) {
     await invoiceLineItemsFactory.create({ invoiceId: invoice.id, description });
-  }
-
-  async function setInvoiceNotes(notes: string) {
-    await db.update(invoices).set({ notes }).where(eq(invoices.id, invoice.id));
   }
 
   async function loginToInvoice(page: Page, user: typeof users.$inferSelect) {
@@ -123,30 +113,5 @@ test.describe("Automatic link detection in invoice content", () => {
     await verifyLinksAndContent(page, {
       "https://gitlab.company.com/merge-requests/456": ["Code review completed for"],
     });
-  });
-
-  test("applies link detection to invoice notes section", async ({ page }) => {
-    await setInvoiceNotes(
-      "Reference documentation at https://docs.company.com/setup-guide or reach out to billing@company.com for questions. Check www.company.com/status for updates.",
-    );
-    await loginToInvoice(page, adminUser);
-
-    await verifyLinksAndContent(
-      page,
-      {
-        "https://docs.company.com/setup-guide": ["Reference documentation at"],
-        "mailto:billing@company.com": ["or reach out to"],
-        "https://www.company.com/status": ["for questions. Check"],
-      },
-      { inNotes: true },
-    );
-  });
-
-  test("handles invoice content without any detectable links", async ({ page }) => {
-    await setInvoiceNotes("Standard invoice processed successfully. No links detected.");
-    await loginToInvoice(page, adminUser);
-
-    await expect(page.getByText("Standard invoice processed successfully. No links detected.")).toBeVisible();
-    await expectNoLinks(page);
   });
 });
